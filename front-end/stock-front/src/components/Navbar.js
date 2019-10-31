@@ -1,35 +1,35 @@
 import { Navbar, Button, Form, Nav, FormControl, NavDropdown } from 'react-bootstrap';
 import React, { Component } from 'react';
+import { Typeahead } from 'react-bootstrap-typeahead';
+import { Link, Redirect } from 'react-router-dom';
 
 export default class Navb extends Component {
     constructor(props) {
         super(props);
         this.fieldRef = React.createRef();
-        this.handleKeyPress = this.handleKeyPress.bind(this);
-        this.getSearchText = this.getSearchText.bind(this);
+        this.redirectToStockInfo = this.redirectToStockInfo.bind(this);
 
         this.state = {
-            symbols: []
+            symbols: [],
+            stockSelected: null
         }
     }
 
-    getSearchText(ref) {
-        let that = this
-        this.searchTimeout = setTimeout(function () {
-            fetch(`http://localhost:5000/?name=${ref.current.value}`).then(resp => resp.json()).then(symbols => {
-                that.setState({ symbols })
-            })
-        }, 200)
+    redirectToStockInfo(val) {
+        const stockSelected = val[0];
+        this.setState({ stockSelected })
     }
 
-    handleKeyPress(e) {
-        if (this.searchTimeout) {
-            clearTimeout(this.searchTimeout)
-        }
-        this.getSearchText(this.fieldRef);
+    componentDidMount() {
+        fetch(`http://localhost:5000/`).then(resp => resp.json()).then(symbols => {
+            this.setState({ symbols })
+        })
     }
 
     render() {
+        if (this.state.stockSelected) {
+            return <Redirect to={`/stock/${this.state.stockSelected}`} />
+        }
         return (
             <>
                 <Navbar bg="primary" variant="dark">
@@ -39,14 +39,8 @@ export default class Navb extends Component {
                         <Nav.Link href="#features">Features</Nav.Link>
                         <Nav.Link href="#pricing">Pricing</Nav.Link>
                     </Nav>
-                    <Form inline>
-                        <FormControl type="text" placeholder="Search" className="mr-sm-2" ref={this.fieldRef} onKeyDown={this.handleKeyPress} />
-                        <Button variant="outline-light">Search</Button>
-                    </Form>
+                    <Typeahead id="stock-search" labelKey="name" onChange={this.redirectToStockInfo} options={this.state.symbols} placeholder="Search Stocks" />
                 </Navbar>
-                {this.state.symbols.map((el, i) => {
-                    return el
-                })}
             </>
         )
     }
