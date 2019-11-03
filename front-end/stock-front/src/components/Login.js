@@ -4,7 +4,7 @@ import { Form, Col, Row } from 'react-bootstrap';
 export default class Login extends Component {
     render() {
         return (
-            <div>
+            <div id="login-form">
                 <Form>
                     <Form.Group as={Row} controlId="formPlaintextEmail">
                         <Form.Label column sm="2">

@@ -15,3 +15,11 @@ code {
 html, body, #root, .App {
   height: 100%;
 }
+
+.App {
+  
+}
+
+#login-form {
+  background: blue;
+}

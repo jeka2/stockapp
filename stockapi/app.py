@@ -5,6 +5,7 @@ from flask import Flask, request, make_response
 from iexfinance.stocks import Stock
 from iexfinance.refdata import get_symbols
 from flask_cors import CORS
+from config import Data
 
 import os
 
@@ -19,7 +20,6 @@ symbol_list = get_symbols(
 
 @app.route("/")
 def hello():
-    print(symbol_list.name)
     return dumps(symbol_list.symbol.values.tolist())
 
 
