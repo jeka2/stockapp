@@ -21,9 +21,9 @@ export default class Navb extends Component {
     }
 
     componentDidMount() {
-        fetch(`http://localhost:5000/`).then(resp => resp.json()).then(symbols => {
-            this.setState({ symbols })
-        })
+        //fetch(`http://localhost:5000/`).then(resp => resp.json()).then(symbols => {
+        //    this.setState({ symbols })
+        //})
     }
 
     render() {
