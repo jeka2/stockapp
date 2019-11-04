@@ -25,13 +25,34 @@ html, body, #root, .App {
   width: 600px;
   margin: 100px auto;
   background: rgb(150,150,150);
+  border-radius: 10px;
+}
+
+.form-header {
+  font-size: 40px;
+  margin-bottom: 20px;
 }
 
 .form-group, .input {
+  position: relative;
   display: block;
 }
 
 .input {
   margin: auto;
   width: 50%;
+}
+
+.session-enter-button {
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.register-field {
+  display: absolute;
+}
+
+.switch-type {
+  cursor: pointer;
+  color: blue;
 }
