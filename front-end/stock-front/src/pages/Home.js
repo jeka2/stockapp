@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Login from '../components/Login';
 import Flash from '../components/Flash';
+import Overview from '../components/Overview';
 
 export default class Home extends Component {
     constructor() {
@@ -11,6 +12,11 @@ export default class Home extends Component {
             loggedIn: false
         }
         this.setFlash = this.setFlash.bind(this);
+        this.logIn = this.logIn.bind(this);
+    }
+
+    logIn() {
+        this.setState({ loggedIn: true });
     }
 
     setFlash(flashMessage, type) {
@@ -27,9 +33,15 @@ export default class Home extends Component {
         return (
             <>
                 <Flash message={this.state.flashMessage} type={this.state.flashType} />
-                <div className="personal-info">
-                    <Login setFlash={this.setFlash} />
-                </div>
+                {this.state.loggedIn ?
+                    <div className="my-overview">
+                        <Overview />
+                    </div>
+                    :
+                    <div className="log-in-form">
+                        <Login setFlash={this.setFlash} logIn={this.logIn} />
+                    </div>
+                }
             </>
         )
     }

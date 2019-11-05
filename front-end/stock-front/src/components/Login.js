@@ -62,7 +62,7 @@ export default class Login extends Component {
                             Password
                         </Form.Label>
                         <Col sm="12">
-                            <Form.Control className="input password-input" type="password" placeholder="Password" />
+                            <Form.Control minLength={6} className="input password-input" type="password" placeholder="Password" />
                         </Col>
                     </Form.Group>
                     {this.state.register ? (
@@ -71,7 +71,7 @@ export default class Login extends Component {
                                 Confirm
                             </Form.Label>
                             <Col sm="12">
-                                <Form.Control className="input password-confirm-input" type="password" placeholder="Password" />
+                                <Form.Control minLength={6} className="input password-confirm-input" type="password" placeholder="Password" />
                             </Col>
                         </Form.Group>
                     ) : ""}
