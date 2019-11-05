@@ -20,14 +20,19 @@ export default class Login extends Component {
     }
 
     handleSubmit(e) {
+        //this.props.setType()
         const email = e.target[0].value;
         const pass = e.target[1].value;
         e.preventDefault()
         if (this.state.register) {
             const passConfirm = e.target[2].value;
-            console.log(passConfirm)
+            // Warn user of unmatched passwords
+            if (pass !== passConfirm) {
+                this.props.setFlash('The passwords did not match', 'danger');
+                return;
+            }
             axios.post(`https://localhost:44338/api/users`,
-                qs.stringify({ email, pass, passConfirm })
+                qs.stringify({ email, pass })
             ).then(res => {
                 console.log(res)
             }).catch(err => {
@@ -48,7 +53,7 @@ export default class Login extends Component {
                         <Form.Label column sm="2">
                             Email
                         </Form.Label>
-                        <Col sm="12" md="12">
+                        <Col sm="12">
                             <Form.Control className="input email-input" type="email" placeholder="example@example.com" />
                         </Col>
                     </Form.Group>
@@ -56,7 +61,7 @@ export default class Login extends Component {
                         <Form.Label column sm="2">
                             Password
                         </Form.Label>
-                        <Col sm="12" md="12">
+                        <Col sm="12">
                             <Form.Control className="input password-input" type="password" placeholder="Password" />
                         </Col>
                     </Form.Group>
@@ -64,8 +69,8 @@ export default class Login extends Component {
                         <Form.Group as={Row} controlId="formPlaintextPassword" className="register-field">
                             <Form.Label column sm="2">
                                 Confirm
-                        </Form.Label>
-                            <Col sm="12" md="12">
+                            </Form.Label>
+                            <Col sm="12">
                                 <Form.Control className="input password-confirm-input" type="password" placeholder="Password" />
                             </Col>
                         </Form.Group>

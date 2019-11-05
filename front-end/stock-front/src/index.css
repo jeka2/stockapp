@@ -18,6 +18,7 @@ html, body, #root, .App {
 
 .navbar {
   width: 100vw;
+  z-index: 2;
 }
 
 #login-form {
@@ -55,4 +56,37 @@ html, body, #root, .App {
 .switch-type {
   cursor: pointer;
   color: blue;
+}
+
+.flash-message {
+  position: absolute;
+  left: 0;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+  height: 50px;
+  animation: slideDown 2s ease-in;
+}
+
+.flash-danger {
+  background-color: rgb(238, 49, 49)
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-30%);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30%);
+  }
 }
