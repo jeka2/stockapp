@@ -13,11 +13,18 @@ namespace StockBackend.Controllers
     public class UsersController : ApiController
     {
         // GET: api/Users
-        public IEnumerable<string> Get()
+
+        public string Get([FromBody] string s)
         {
-            return new string[] { "value1", "value2" };
+            return s;
         }
 
+        [Route("api/users/email/{email}/password/{pass}")]
+        public Dictionary<string, string> GetCheckAuthentication(string email, string pass)
+        {
+            var sessionToken = UserDataAccess.GetUser(email, pass);
+            return sessionToken;
+        }
         // GET: api/Users/5
         public string Get(string email, string password = null)
         {
@@ -26,13 +33,13 @@ namespace StockBackend.Controllers
         }
 
         // POST: api/Users
-        public void Post([FromBody]User data)
+        public Dictionary<string, string> Post([FromBody]User data)
         {
             string email = data.email;
             string pass = data.pass;
-            var s = "sdf";
-            var d = "sdfs";
-            DBAccess.UserDataAccess.InsertUser(email, pass);
+
+            var sessionToken = UserDataAccess.InsertUser(email, pass);
+            return sessionToken;
         }
 
         // PUT: api/Users/5
@@ -43,6 +50,13 @@ namespace StockBackend.Controllers
         // DELETE: api/Users/5
         public void Delete(int id)
         {
+        }
+
+        [Route("api/Users/token/{token}")]
+        public bool GetUserByToken(string token)
+        {
+            bool authenticated = UserDataAccess.CheckAuthToken(token);
+            return authenticated;
         }
     }
     public class User

@@ -1,6 +1,5 @@
 ﻿using Npgsql;
 using System;
-using static System.Windows.Forms;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using static System.Security.Cryptography.PBKDF2;
@@ -22,7 +21,7 @@ namespace DBAccess
         static private NpgsqlCommand comm;
         static private string sql = null;
 
-        public static bool GetUser(string email, string password = null)
+        public static Dictionary<string, string> GetUser(string email, string password)
         {
             try
             {
@@ -30,45 +29,74 @@ namespace DBAccess
                 conn.Open();
 
                 email = MiscDBMethods.Sanitize(email);
+                password = MiscDBMethods.Sanitize(password);
                 string suffix = $" where email = '{email}'";
-                // varifying user existence
-                if (password != null)
-                {
-                    suffix += $" and password = '{password}'";
-                }
+
                 sql = $"select * from users{suffix}";
                 comm = new NpgsqlCommand(sql, conn);
 
                 dt = new DataTable();
                 dt.Load(comm.ExecuteReader());
 
-                List<string> names = new List<string>();
+                string hashedPassword = null;
+
                 foreach (DataRow row in dt.Rows)
                 {
-                    names.Add(row["name"].ToString());
+                    hashedPassword = row["password"].ToString();
                 }
-                return true;
+
+                if (hashedPassword != null) // user found, so now we compare
+                {
+                    byte[] hashBytes = Convert.FromBase64String(hashedPassword);
+                    byte[] salt = new byte[16];
+                    Array.Copy(hashBytes, 0, salt, 0, 16);
+
+                    var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000);
+                    byte[] hash = pbkdf2.GetBytes(20);
+
+                    bool match = true;
+                    for (int i = 0; i < 20; i++)
+                    {
+                        if (hashBytes[i + 16] != hash[i]) // if any part of the array doesn't match, the password is wrong
+                        {
+                            match = false;
+                            return new Dictionary<string, string>() { { "Error", "Wrong Password" } };
+                        }
+                    }
+                    Guid token = Guid.NewGuid();
+                    sql = $"INSERT INTO tokens(token, user_email) VALUES('{token.ToString()}', '{email}')";
+
+                    comm = new NpgsqlCommand(sql, conn);
+
+                    comm.ExecuteNonQuery();
+
+                    conn.Close();
+
+                    return new Dictionary<string, string>() { { "Token", token.ToString() } };
+                }
+                else // The user doesn't exist
+                {
+                    return new Dictionary<string, string>() { { "Error", "User Doesn't Exist" } };
+                }
+                
             }
             catch (Exception e)
             {
-
+                return new Dictionary<string, string>() { { "Error", "Unidentified Error" } };
             }
-            finally
-            {
-
-            }
-            return false;
         }
 
-        public static void InsertUser(string email, string pass)
+        public static Dictionary<string, string> InsertUser(string email, string password)
         {
             try
             {
+                email = MiscDBMethods.Sanitize(email);
+                password = MiscDBMethods.Sanitize(password);
                 byte[] salt;
                 // generate salt
                 new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
 
-                var pbkdf2 = new Rfc2898DeriveBytes(pass, salt, 10000);
+                var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000);
                 // create array for the hashed password
                 byte[] hash = pbkdf2.GetBytes(20);
                 // create array of 20 bytes for password and 16 for salt
@@ -86,12 +114,43 @@ namespace DBAccess
 
                 comm.ExecuteNonQuery();
 
+                // along with creating the user, we'll sign them in and provide a session token
+                Guid token = Guid.NewGuid();
+                sql = $"INSERT INTO tokens(token, user_email) VALUES('{token.ToString()}', '{email}')";
+
+                comm = new NpgsqlCommand(sql, conn);
+
+                comm.ExecuteNonQuery();
+
                 conn.Close();
+
+                return new Dictionary<string, string>() { { "Token", token.ToString() } };
             }
             catch (Exception e)
             {
-
+                return new Dictionary<string, string>() { { "Error", "Unidentified Error" } };
             }
+        }
+
+        public static bool CheckAuthToken(string token, bool erase=false)
+        {
+            conn = new NpgsqlConnection(connstring);
+            conn.Open();
+
+            sql = $"select * from tokens WHERE token='{token}'";
+            comm = new NpgsqlCommand(sql, conn);
+
+            dt = new DataTable();
+            dt.Load(comm.ExecuteReader());
+
+            bool exists = false;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                exists = true;
+            }
+
+            return exists;
         }
 
     }
