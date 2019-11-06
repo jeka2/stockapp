@@ -20,15 +20,6 @@ export default class Session extends Component {
         this.setState({ register: !this.state.register })
     }
 
-    checkForExistingUser(email) {
-        let userExists = false;
-        axios.get('https://localhost:44338/api/users')
-    }
-
-    componentDidMount() {
-        console.log(this.props)
-    }
-
     handleSubmit(e) {
         e.preventDefault()
         const email = e.target[0].value;
@@ -46,18 +37,30 @@ export default class Session extends Component {
             axios.post('https://localhost:44338/api/users',
                 qs.stringify({ email, pass })
             ).then(res => {
-                cookie.save('token', res.data);
-                // this.props.setFlash('logged in successfully!', 'success');
+                if (res.data["Token"]) {
+                    cookie.save('token', res.data["Token"]);
+                    this.props.setFlash('Logged in Successfully', 'success');
+                    this.props.logUserIn();
+                }
+                else if (res.data["Error"]) {
+                    this.props.setFlash(res.data["Error"], 'danger');
+                }
             }).catch(err => {
+                console.log(err)
                 this.props.setFlash('something went wront', 'danger');
             })
         }
         // if the user is logging in
         else {
-            axios.get('https://localhost:44338/api/users',
-                qs.stringify({ email, pass })
+            axios.get(`https://localhost:44338/api/users/email/${email}/password/${pass}`
             ).then(res => {
-                this.props.setFlash('logged in successfully!', 'success');
+                if (res.data["Token"]) {
+                    this.props.setFlash('Logged in Successfully', 'success');
+                    this.props.logUserIn();
+                }
+                else if (res.data["Error"]) {
+                    this.props.setFlash(res.data["Error"], 'danger');
+                }
             }).catch(err => {
                 this.props.setFlash('something went wront', 'danger');
             })

@@ -10,6 +10,7 @@ import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-d
 import React, { Component } from 'react';
 import axios from 'axios';
 let qs = require('qs');
+var log = false;
 
 export default class App extends Component {
   constructor(props) {
@@ -20,6 +21,12 @@ export default class App extends Component {
       flashType: null
     }
     this.setFlash = this.setFlash.bind(this);
+    this.logUserIn = this.logUserIn.bind(this);
+  }
+
+  logUserIn() {
+    this.setState({ loggedIn: true });
+    log = true;
   }
 
   setFlash(flashMessage, type) {
@@ -37,12 +44,22 @@ export default class App extends Component {
     if (token) { // check on whether there's an active token for a user
       axios.get(`https://localhost:44338/api/users/token/${token}`, qs.stringify({ token }))
         .then(res => {
-          console.log(res)
+          if (res.data === true) {
+            this.logUserIn();
+          }
         })
     }
     else { // the user will need to login/sign up
       console.log('blah')
     }
+  }
+
+  componentDidUpdate() {
+    console.log(this.state.loggedIn)
+  }
+
+  componentDidMount() {
+    console.log(this.state.loggedIn)
   }
 
 
@@ -52,11 +69,11 @@ export default class App extends Component {
         <Navbar />
         <Flash type={this.state.flashType} message={this.state.flashMessage} />
         <Switch>
-          <ProtectedRoute exact path="/" component={Home} />
+          <ProtectedRoute exact path="/" component={Home} signedIn={true} />
           <Route exact path="/stock/:symbol" component={Stock} />
           <Route
             exact path="/session"
-            render={(props) => < Session {...props} setFlash={this.setFlash} />} />
+            render={(props) => < Session {...props} setFlash={this.setFlash} logUserIn={this.logUserIn} />} />
         </Switch>
       </div>
     )
@@ -65,7 +82,7 @@ export default class App extends Component {
 
 const ProtectedRoute = ({ component: Component, ...etc }) => (
   <Route {...etc} render={(props) => (
-    false ? <Component {...props} />
+    true ? <Component {...props} />
       : <Redirect to="/session" />
   )} />
 )
