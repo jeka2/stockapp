@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Col, Row, Button } from 'react-bootstrap';
 import axios from 'axios';
+import cookie from 'react-cookies';
 
 let qs = require('qs');
 
@@ -24,16 +25,17 @@ export default class Session extends Component {
         axios.get('https://localhost:44338/api/users')
     }
 
+    componentDidMount() {
+        console.log(this.props)
+    }
+
     handleSubmit(e) {
         e.preventDefault()
         const email = e.target[0].value;
         const pass = e.target[1].value;
+        // If the user is registering
         if (this.state.register) {
             const passConfirm = e.target[2].value;
-            // Warn user of already existing name
-            if (this.checkForExistingUser) {
-
-            }
             // Warn user of unmatched passwords
             if (pass !== passConfirm) {
                 this.props.setFlash('The passwords did not match', 'danger');
@@ -44,11 +46,13 @@ export default class Session extends Component {
             axios.post('https://localhost:44338/api/users',
                 qs.stringify({ email, pass })
             ).then(res => {
-                this.props.setFlash('logged in successfully!', 'success');
+                cookie.save('token', res.data);
+                // this.props.setFlash('logged in successfully!', 'success');
             }).catch(err => {
                 this.props.setFlash('something went wront', 'danger');
             })
         }
+        // if the user is logging in
         else {
             axios.get('https://localhost:44338/api/users',
                 qs.stringify({ email, pass })
