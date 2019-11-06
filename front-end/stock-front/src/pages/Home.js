@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Login from '../components/Login';
 import Flash from '../components/Flash';
 import Overview from '../components/Overview';
+import cookie from 'react-cookies';
+
 
 export default class Home extends Component {
     constructor() {
@@ -9,7 +11,7 @@ export default class Home extends Component {
         this.state = {
             flashMessage: null,
             flashType: null,
-            loggedIn: false
+            loggedIn: false,
         }
         this.setFlash = this.setFlash.bind(this);
         this.logIn = this.logIn.bind(this);
@@ -26,6 +28,14 @@ export default class Home extends Component {
 
         function removeFlash() {
             that.setState({ flashMessage: null, flashType: null });
+        }
+    }
+
+    componentWillMount() {
+        console.log(cookie)
+        // if there's a token stored as a cookie, log the user in
+        if (cookie.load('token')) {
+
         }
     }
 
