@@ -19,17 +19,20 @@ namespace StockBackend.Controllers
         }
 
         // GET: api/Users/5
-        public string Get(int id)
+        public string Get(string email, string password = null)
         {
+            UserDataAccess.GetUser(email, password);
             return "value";
         }
 
         // POST: api/Users
-        public void Post([FromBody]UserData data)
+        public void Post([FromBody]User data)
         {
             string email = data.email;
             string pass = data.pass;
-            string passConfig = data.passConfirm;
+            var s = "sdf";
+            var d = "sdfs";
+            DBAccess.UserDataAccess.InsertUser(email, pass);
         }
 
         // PUT: api/Users/5
@@ -42,10 +45,9 @@ namespace StockBackend.Controllers
         {
         }
     }
-    public class UserData
+    public class User
     {
         public string email { get; set; }
         public string pass { get; set; }
-        public string passConfirm { get; set; }
     }
 }

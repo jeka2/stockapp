@@ -72,6 +72,10 @@ html, body, #root, .App {
   background-color: rgb(238, 49, 49)
 }
 
+.flash-success {
+  background-color: green;
+}
+
 @keyframes slideDown {
   0% {
     opacity: 0;

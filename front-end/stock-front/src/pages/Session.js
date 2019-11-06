@@ -4,7 +4,7 @@ import axios from 'axios';
 
 let qs = require('qs');
 
-export default class Login extends Component {
+export default class Session extends Component {
     constructor(props) {
         super(props);
 

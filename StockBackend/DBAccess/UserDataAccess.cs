@@ -1,6 +1,9 @@
 ﻿using Npgsql;
 using System;
+using static System.Windows.Forms;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using static System.Security.Cryptography.PBKDF2;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -19,14 +22,20 @@ namespace DBAccess
         static private NpgsqlCommand comm;
         static private string sql = null;
 
-        public static List<string> GetUser(string name)
+        public static bool GetUser(string email, string password = null)
         {
-            name = MiscDBMethods.Sanitize(name);
             try
             {
                 conn = new NpgsqlConnection(connstring);
                 conn.Open();
-                string suffix = $" where name = '{name}'";
+
+                email = MiscDBMethods.Sanitize(email);
+                string suffix = $" where email = '{email}'";
+                // varifying user existence
+                if (password != null)
+                {
+                    suffix += $" and password = '{password}'";
+                }
                 sql = $"select * from users{suffix}";
                 comm = new NpgsqlCommand(sql, conn);
 
@@ -38,7 +47,7 @@ namespace DBAccess
                 {
                     names.Add(row["name"].ToString());
                 }
-                return names;
+                return true;
             }
             catch (Exception e)
             {
@@ -48,17 +57,31 @@ namespace DBAccess
             {
 
             }
-            return null;
+            return false;
         }
 
         public static void InsertUser(string email, string pass)
         {
             try
             {
+                byte[] salt;
+                // generate salt
+                new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
+
+                var pbkdf2 = new Rfc2898DeriveBytes(pass, salt, 10000);
+                // create array for the hashed password
+                byte[] hash = pbkdf2.GetBytes(20);
+                // create array of 20 bytes for password and 16 for salt
+                byte[] hashBytes = new byte[36];
+
+                Array.Copy(salt, 0, hashBytes, 0, 16);
+                Array.Copy(hash, 0, hashBytes, 16, 20);
+                // now, byte array to the final hashed+salt string
+                string passwordToStore = Convert.ToBase64String(hashBytes);
                 conn = new NpgsqlConnection(connstring);
                 conn.Open();
                 //sql = "select * from get_users()";
-                sql = $"INSERT INTO users(email) VALUES('{userName}')";
+                sql = $"INSERT INTO users(email, password) VALUES('{email}', '{passwordToStore}')";
                 comm = new NpgsqlCommand(sql, conn);
 
                 comm.ExecuteNonQuery();
